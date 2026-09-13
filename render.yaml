@@ -3,6 +3,7 @@ services:
   - type: web
     name: n8n-main
     runtime: docker
+    dockercontext: .
     dockerfile: Dockerfile
     plan: starter
     region: oregon 
@@ -11,7 +12,6 @@ services:
         value: "true"
       - key: N8N_RUNNERS_MODE
         value: "external"
-      # FIX 1: Allow internal port 5679 to accept connections over Render's private network
       - key: N8N_RUNNERS_BROKER_LISTEN_ADDRESS
         value: "0.0.0.0"
       - key: N8N_RUNNERS_AUTH_TOKEN
@@ -34,7 +34,6 @@ services:
     envVars:
       - key: N8N_RUNNERS_LAUNCHER
         value: "python"
-      # FIX 2: Authorize the script executions within the sidecar
       - key: N8N_RUNNERS_EXTERNAL_ALLOW
         value: "*"
       - key: N8N_RUNNERS_AUTH_TOKEN
