@@ -1,0 +1,41 @@
+version: 1
+services:
+  # Main n8n web application
+  - type: web
+    name: n8n-main
+    runtime: docker
+    dockerfile: Dockerfile
+    plan: starter
+    region: oregon # Change to your preferred Render region
+    envVars:
+      - key: N8N_RUNNERS_ENABLED
+        value: "true"
+      - key: N8N_RUNNERS_MODE
+        value: "external"
+      - key: N8N_RUNNERS_AUTH_TOKEN
+        generateValue: true
+      - key: PORT
+        value: "5678"
+    disk:
+      name: n8n-data
+      mountPath: /home/node/.n8n
+      sizeGB: 10
+
+  # External Python Task Runner (Private Worker)
+  - type: worker
+    name: n8n-python-runner
+    runtime: docker
+    dockercontext: .
+    dockerfile: Dockerfile.runner
+    plan: starter
+    region: oregon # Must match the web service region to talk internally
+    envVars:
+      - key: N8N_RUNNERS_LAUNCHER
+        value: "python"
+      - key: N8N_RUNNERS_AUTH_TOKEN
+        fromService:
+          type: web
+          name: n8n-main
+          envVarKey: N8N_RUNNERS_AUTH_TOKEN
+      - key: N8N_RUNNERS_TASK_BROKER_URI
+        value: "http://n8n-main:5679"
