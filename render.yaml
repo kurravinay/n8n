@@ -1,4 +1,3 @@
-version: 1
 services:
   # Main n8n web application
   - type: web
@@ -6,12 +5,15 @@ services:
     runtime: docker
     dockerfile: Dockerfile
     plan: starter
-    region: oregon # Change to your preferred Render region
+    region: oregon 
     envVars:
       - key: N8N_RUNNERS_ENABLED
         value: "true"
       - key: N8N_RUNNERS_MODE
         value: "external"
+      # FIX 1: Allow internal port 5679 to accept connections over Render's private network
+      - key: N8N_RUNNERS_BROKER_LISTEN_ADDRESS
+        value: "0.0.0.0"
       - key: N8N_RUNNERS_AUTH_TOKEN
         generateValue: true
       - key: PORT
@@ -28,10 +30,13 @@ services:
     dockercontext: .
     dockerfile: Dockerfile.runner
     plan: starter
-    region: oregon # Must match the web service region to talk internally
+    region: oregon 
     envVars:
       - key: N8N_RUNNERS_LAUNCHER
         value: "python"
+      # FIX 2: Authorize the script executions within the sidecar
+      - key: N8N_RUNNERS_EXTERNAL_ALLOW
+        value: "*"
       - key: N8N_RUNNERS_AUTH_TOKEN
         fromService:
           type: web
